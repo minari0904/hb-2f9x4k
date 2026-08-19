@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="ko" data-palette="#2a78d6,#eb6834,#1baf7a,#eda100,#e87ba4">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>자산가계부</title>
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f9f9f7; --surface:#fcfcfb; --surface-2:#f2f2ef;
+  --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
+  --s1-soft:#9ec5f4; --s1-deep:#184f95;
+  --ord-a1:#57b8ff; --ord-a2:#3689ee; --ord-a3:#165cad;
+  --ord-n1:#2ac088; --ord-n2:#009868; --ord-n3:#006b44;
+  --ord-d1:#ff854c; --ord-d2:#da5d2b; --ord-d3:#9d3909;
+  --up:#006300; --down:#d03b3b; --warn:#fab219;
+  --shadow:0 1px 2px rgba(11,11,11,.05), 0 8px 24px -12px rgba(11,11,11,.12);
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+    --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    --s1-soft:#184f95; --s1-deep:#86b6ef;
+    --ord-a1:#165cad; --ord-a2:#3689ee; --ord-a3:#57b8ff;
+    --ord-n1:#006b44; --ord-n2:#009868; --ord-n3:#2ac088;
+    --ord-d1:#9d3909; --ord-d2:#da5d2b; --ord-d3:#ff854c;
+    --up:#0ca30c; --down:#e66767;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+  --ink:#fff; --ink-2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+  --s1-soft:#184f95; --s1-deep:#86b6ef;
+  --ord-a1:#165cad; --ord-a2:#3689ee; --ord-a3:#57b8ff;
+  --ord-n1:#006b44; --ord-n2:#009868; --ord-n3:#2ac088;
+  --ord-d1:#9d3909; --ord-d2:#da5d2b; --ord-d3:#ff854c;
+  --up:#0ca30c; --down:#e66767;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--plane); color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-size:15px; line-height:1.5;
+  padding:0 0 64px; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+
+/* ── header ─────────────────────────────── */
+header{
+  position:sticky; top:0; z-index:40; background:var(--plane);
+  border-bottom:1px solid var(--grid); padding:14px 0 0;
+}
+.hd{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+h1{font-size:17px;font-weight:700;margin:0;letter-spacing:-.02em}
+.stamp{font-size:11.5px;color:var(--muted);margin-top:2px}
+.iconbtn{
+  border:1px solid var(--ring);background:var(--surface);color:var(--ink-2);
+  width:36px;height:36px;border-radius:10px;display:grid;place-items:center;
+  cursor:pointer;flex:none;font-size:15px
+}
+.filters{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0 12px;align-items:center}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;gap:2px}
+.seg button{
+  border:0;background:transparent;color:var(--ink-2);font:inherit;font-size:13px;
+  padding:6px 11px;border-radius:8px;cursor:pointer;min-height:32px;white-space:nowrap
+}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:var(--shadow)}
+select.msel{
+  font:inherit;font-size:13px;font-weight:600;padding:7px 30px 7px 11px;min-height:38px;
+  border-radius:10px;border:1px solid var(--ring);background:var(--surface);color:var(--ink);
+  appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 16px) 17px,calc(100% - 11px) 17px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+}
+.flabel{font-size:11.5px;color:var(--muted);margin-right:-3px}
+
+/* ── cards / sections ───────────────────── */
+section{margin-top:26px}
+.stitle{display:flex;align-items:baseline;gap:9px;margin:0 0 12px;padding:0 2px}
+.stitle h2{font-size:14px;font-weight:700;margin:0;letter-spacing:-.01em}
+.stitle .sub{font-size:11.5px;color:var(--muted)}
+.card{
+  background:var(--surface);border:1px solid var(--ring);border-radius:var(--r);
+  padding:16px;box-shadow:var(--shadow)
+}
+.card + .card{margin-top:12px}
+.card.slim{padding:12px 16px}
+.chd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.chd h3{font-size:13px;font-weight:600;margin:0;color:var(--ink)}
+.chd .note{font-size:11.5px;color:var(--muted);font-weight:400}
+.tbtn{
+  border:1px solid var(--ring);background:transparent;color:var(--muted);
+  font:inherit;font-size:11px;padding:4px 9px;border-radius:7px;cursor:pointer;flex:none
+}
+.tbtn[aria-pressed="true"]{background:var(--surface-2);color:var(--ink-2)}
+
+/* ── KPI ────────────────────────────────── */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{
+  background:var(--surface);border:1px solid var(--ring);border-radius:var(--r);
+  padding:14px 14px 10px;box-shadow:var(--shadow);position:relative;overflow:hidden
+}
+.kpi .lb{font-size:11.5px;color:var(--muted);font-weight:500}
+.kpi .vl{font-size:26px;font-weight:700;letter-spacing:-.032em;margin-top:5px;line-height:1.15;cursor:pointer}
+.kpi .dl{font-size:11.5px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpinote{font-size:11px;color:var(--muted);margin-top:9px;padding:0 3px;line-height:1.6}
+.kpi .spark{margin-top:9px;display:block;width:100%;height:30px}
+.up{color:var(--up);font-weight:600}
+.down{color:var(--down);font-weight:600}
+.flat{color:var(--muted);font-weight:600}
+.vs{color:var(--muted);font-weight:400}
+@media(min-width:760px){
+  .kpis{grid-template-columns:repeat(4,1fr)}
+  .kpi .vl{font-size:28px}
+}
+
+/* ── generic ────────────────────────────── */
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--ink-2)}
+.sw{width:11px;height:11px;border-radius:3px;flex:none}
+.swl{width:14px;height:2px;border-radius:2px;flex:none}
+table.tv{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:12px;font-variant-numeric:tabular-nums}
+table.tv th,table.tv td{padding:7px 8px;border-bottom:1px solid var(--grid);text-align:right;white-space:nowrap}
+table.tv th:first-child,table.tv td:first-child{text-align:left;font-variant-numeric:normal}
+table.tv th{color:var(--muted);font-weight:500;font-size:11px;white-space:nowrap}
+table.tv th.sortable{cursor:pointer;user-select:none}
+table.tv th.sortable:hover{color:var(--ink-2)}
+table.tv th.sortable.on{color:var(--ink);font-weight:700}
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0 2px}
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
+table.tv td.why{white-space:normal;min-width:120px;max-width:210px;color:var(--ink-2);font-size:11.5px}
+select.mini{font:inherit;font-size:12px;padding:6px 26px 6px 10px;min-height:32px;border-radius:8px;
+  border:1px solid var(--ring);background:var(--surface);color:var(--ink);appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 14px) 14px,calc(100% - 9px) 14px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+table.tv tr:last-child td{border-bottom:0}
+.hidden{display:none !important}
+.empty{color:var(--muted);font-size:12.5px;padding:22px 4px;text-align:center;line-height:1.7}
+.num{cursor:pointer;border-bottom:1px dotted var(--axis)}
+
+/* rows */
+.rowlist{display:flex;flex-direction:column;gap:11px}
+.rw{display:grid;grid-template-columns:1fr auto;gap:3px 10px;align-items:baseline}
+.rw .nm{font-size:12.5px;color:var(--ink-2)}
+.rw .vv{font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums}
+.rw .bar{grid-column:1/-1;height:9px;border-radius:0 4px 4px 0;background:var(--s1)}
+.rw .track{grid-column:1/-1;height:9px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.rw .track > i{display:block;height:100%;border-radius:0 4px 4px 0}
+.rw.clickable{cursor:pointer;border-radius:8px;padding:4px 6px;margin:-4px -6px}
+.rw.clickable:hover{background:var(--surface-2)}
+.rw .nm .chev{color:var(--muted);font-size:9px;display:inline-block;transition:transform .15s;margin-right:4px}
+.rw.open .nm .chev{transform:rotate(90deg)}
+.rw .nm.over{color:var(--ink);font-weight:700}
+.rw .nm .ovtag{color:var(--down);font-weight:400;margin-left:5px}
+.det{grid-column:1/-1;margin-top:8px;border-left:2px solid var(--grid);padding-left:10px}
+.det .dr{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0;color:var(--ink-2)}
+.det .dr .dd{color:var(--muted);flex:none;width:38px;font-variant-numeric:tabular-nums}
+.det .dr .dn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.det .dr .dv{font-variant-numeric:tabular-nums;font-weight:600;flex:none}
+.det .more{font-size:11px;color:var(--muted);padding-top:4px}
+
+/* reason cards */
+.rcards{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:700px){.rcards{grid-template-columns:1fr 1fr}}
+.rc{border:1px solid var(--ring);border-radius:12px;padding:12px 13px;background:var(--surface-2)}
+.rc .t{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.rc .nm{font-size:13px;font-weight:600}
+.rc .dv{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rc .why{font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.55}
+.rc .pct{font-size:11px;color:var(--muted);font-weight:500}
+
+/* tooltip */
+#tip{
+  position:fixed;z-index:100;pointer-events:none;opacity:0;transition:opacity .1s;
+  background:var(--surface);border:1px solid var(--ring);border-radius:10px;
+  box-shadow:0 8px 28px -8px rgba(0,0,0,.35);padding:9px 11px;font-size:12px;
+  max-width:78vw;line-height:1.55
+}
+#tip .tt{font-size:11px;color:var(--muted);margin-bottom:4px}
+#tip .tr{display:flex;align-items:center;gap:7px;justify-content:space-between}
+#tip .tr b{font-variant-numeric:tabular-nums}
+svg{display:block;overflow:visible}
+.axtx{font-size:10px;fill:var(--muted)}
+.dlbl{font-size:10.5px;font-weight:600}
+details{border-top:1px solid var(--grid);margin-top:14px;padding-top:10px}
+.card.slim > details{border-top:0;margin-top:0;padding-top:0}
+details summary{font-size:12px;color:var(--muted);cursor:pointer;list-style:none;display:flex;align-items:center;gap:6px}
+details summary::-webkit-details-marker{display:none}
+details summary::before{content:"▸";display:inline-block;transition:transform .15s}
+details[open] summary::before{transform:rotate(90deg)}
+.goaltxt{font-size:12.5px;color:var(--ink-2);white-space:pre-wrap;line-height:1.75}
+.pill{display:inline-block;font-size:10.5px;padding:2px 7px;border-radius:20px;background:var(--surface-2);color:var(--muted);font-weight:500}
+.loading{padding:80px 20px;text-align:center;color:var(--muted);font-size:13px}
+.err{padding:40px 18px;text-align:center;color:var(--down);font-size:13px;line-height:1.8}
+/* password gate */
+#gate{position:fixed;inset:0;background:var(--plane);z-index:200;display:grid;place-items:center;padding:24px}
+#gate .box{width:100%;max-width:320px;text-align:center}
+#gate h2{font-size:16px;margin:0 0 6px}
+#gate p{font-size:12.5px;color:var(--muted);margin:0 0 18px}
+#gate input{width:100%;font:inherit;padding:12px 14px;border-radius:11px;border:1px solid var(--ring);background:var(--surface);color:var(--ink);text-align:center}
+#gate button{width:100%;margin-top:10px;font:inherit;font-weight:600;padding:12px;border-radius:11px;border:0;background:var(--s1);color:#fff;cursor:pointer}
+#gate .msg{font-size:12px;color:var(--down);margin-top:10px;min-height:16px}
+</style>
+</head>
+<body>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<div id="gate" class="hidden"><div class="box">
+  <h2>가계부 대시보드</h2>
+  <p>비밀번호를 입력하세요</p>
+  <input id="gpw" type="password" autocomplete="current-password" inputmode="text">
+  <button id="gbtn">열기</button>
+  <div class="msg" id="gmsg"></div>
+</div></div>
+
+<div id="app"><div class="loading">불러오는 중…</div></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   설정
+   ══════════════════════════════════════════════════════════ */
+const CONFIG = {
+  // 'csv'       : 구글 시트 게시 CSV를 직접 읽음 (테스트용)
+  // 'encrypted' : GitHub Actions가 만든 암호화 파일을 읽음 (실제 배포용)
+  mode: 'encrypted',
+  csvUrl: '',          // 비워두면 같은 폴더의 data.csv 를 읽음
+  detailCsvUrl: '',    // 지출가계부 탭 게시 CSV (비우면 상세 내역 기능 꺼짐)
+  encPath: 'data.enc'
+};
+
+/* ══ CSV 파서 ══ */
+function parseCSV(t){
+  t = t.replace(/^﻿/,'');
+  const rows=[]; let row=[], f='', q=false;
+  for(let i=0;i<t.length;i++){
+    const c=t[i];
+    if(q){
+      if(c==='"'){ if(t[i+1]==='"'){f+='"';i++;} else q=false; }
+      else f+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===','){ row.push(f); f=''; }
+      else if(c==='\n'){ row.push(f); rows.push(row); row=[]; f=''; }
+      else if(c!=='\r') f+=c;
+    }
+  }
+  if(f!==''||row.length){ row.push(f); rows.push(row); }
+  return rows;
+}
+function splitBlocks(rows){
+  const B={}; let cur=null;
+  for(const r of rows){
+    const a=(r[0]||'').trim();
+    if(a.startsWith('#')){ cur={header:null,rows:[]}; B[a]=cur; continue; }
+    if(!cur) continue;
+    if(r.every(c=>(c||'').trim()==='')){ continue; }
+    if(!cur.header){ cur.header=r.map(s=>(s||'').trim()); continue; }
+    cur.rows.push(r);
+  }
+  for(const k in B){
+    const b=B[k];
+    b.objs=b.rows.map(r=>{ const o={}; b.header.forEach((h,i)=>o[h]=(r[i]!==undefined?r[i]:'').trim()); return o; });
+  }
+  return B;
+}
+const N = v => {
+  if(v===undefined||v===null) return null;
+  let s=String(v).trim(); if(s===''||s==='-') return null;
+  let p=false; if(s.endsWith('%')){p=true;s=s.slice(0,-1);}
+  s=s.replace(/[,\s₩원]/g,'');
+  const n=parseFloat(s); if(isNaN(n)) return null;
+  return p? n/100 : n;
+};
+
+/* ══ 숫자 표기 ══ */
+function fmt(v){
+  if(v===null||v===undefined||isNaN(v)) return '—';
+  const s=v<0?'-':'', a=Math.abs(v);
+  if(a>=1e8){ const e=a/1e8; return s+(e>=100?Math.round(e).toLocaleString():e.toFixed(2).replace(/\.?0+$/,''))+'억원'; }
+  if(a>=1e4){ return s+Math.round(a/1e4).toLocaleString()+'만원'; }
+  if(a===0) return '0원';
+  return s+Math.round(a).toLocaleString()+'원';
+}
+const full = v => (v===null||v===undefined||isNaN(v))?'—':Math.round(v).toLocaleString()+'원';
+const pctS = (v,d) => (v===null||v===undefined||isNaN(v))?'—':(v*100).toFixed(d===undefined?1:d)+'%';
+function rateOK(r){ return r!==null && r!==undefined && isFinite(r) && Math.abs(r)<=9.99; }
+function deltaHTML(d, rate){
+  if(d===null||d===undefined||isNaN(d)) return '<span class="flat">—</span>';
+  const cls = d>0?'up':(d<0?'down':'flat'), ar = d>0?'▲':(d<0?'▼':'—');
+  let s = '<span class="'+cls+'">'+ar+' '+fmt(Math.abs(d))+'</span>';
+  if(rateOK(rate)) s+=' <span class="vs">('+(rate>0?'+':'')+(rate*100).toFixed(1)+'%)</span>';
+  return s;
+}
+const esc = s => String(s===undefined||s===null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ══ 툴팁 ══ */
+const tipEl=document.getElementById('tip');
+let tipLock=null;
+function showTip(html,x,y,below){
+  tipEl.innerHTML=html; tipEl.style.opacity='1';
+  const r=tipEl.getBoundingClientRect();
+  let L=x-r.width/2, T=below?(y+12):(y-r.height-14);
+  L=Math.max(8,Math.min(L,innerWidth-r.width-8));
+  if(!below && T<8) T=y+18;
+  if(below && T+r.height>innerHeight-8) T=Math.max(8,y-r.height-12);
+  tipEl.style.left=L+'px'; tipEl.style.top=T+'px';
+}
+const hideTip = ()=>{ tipEl.style.opacity='0'; };
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-full]');
+  if(t){
+    const r=t.getBoundingClientRect();
+    showTip('<div class="tt">'+esc(t.dataset.lb||'정확한 금액')+'</div><b style="font-size:14px">'+esc(t.dataset.full)+'</b>',
+            r.left+r.width/2, r.top);
+    clearTimeout(tipLock); tipLock=setTimeout(hideTip,2600);
+  } else if(!e.target.closest('svg')) hideTip();
+});
+
+/* ══ 차트 유틸 ══ */
+const SVGNS='http://www.w3.org/2000/svg';
+function el(n,a){ const e=document.createElementNS(SVGNS,n); for(const k in (a||{})) e.setAttribute(k,a[k]); return e; }
+const CSS = k => getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+function niceStep(span,count){
+  const raw=span/Math.max(1,count);
+  const mag=Math.pow(10,Math.floor(Math.log10(Math.abs(raw)||1)));
+  const n=raw/mag;
+  return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*mag;
+}
+
+/* 가로 스택 막대 (2px 서피스 갭 + 4px 라운드 끝) */
+function hStack(host, segs, opts){
+  opts=opts||{}; host.innerHTML='';
+  const H=opts.h||30, GAP=2, W=host.clientWidth||600;
+  const tot=segs.reduce((s,d)=>s+Math.max(0,d.v),0);
+  if(!tot){ host.innerHTML='<div class="empty">데이터 없음</div>'; return; }
+  const vis=segs.filter(d=>d.v>0);
+  const avail=W-GAP*Math.max(0,vis.length-1);
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,preserveAspectRatio:'none'});
+  let x=0;
+  vis.forEach((d,i)=>{
+    const w=Math.max(1,avail*d.v/tot);
+    const first=i===0, last=i===vis.length-1, R=4;
+    let path;
+    if(first&&last) path='M0,0 h'+w+' v'+H+' h-'+w+' Z';
+    else if(first)  path='M'+R+',0 h'+(w-R)+' v'+H+' h-'+(w-R)+' a'+R+','+R+' 0 0 1 -'+R+',-'+R+' v'+(-(H-2*R))+' a'+R+','+R+' 0 0 1 '+R+',-'+R+' Z';
+    else if(last)   path='M0,0 h'+(w-R)+' a'+R+','+R+' 0 0 1 '+R+','+R+' v'+(H-2*R)+' a'+R+','+R+' 0 0 1 -'+R+','+R+' h'+(-(w-R))+' Z';
+    else            path='M0,0 h'+w+' v'+H+' h-'+w+' Z';
+    const g=el('g',{transform:'translate('+x+',0)'});
+    const p=el('path',{d:path,fill:d.c});
+    p.style.cursor='pointer';
+    const share=d.v/tot;
+    const bind=ev=>{
+      const r=svg.getBoundingClientRect();
+      showTip('<div class="tt">'+esc(d.n)+'</div><div class="tr"><span style="display:inline-flex;align-items:center;gap:6px"><i class="sw" style="background:'+d.c+'"></i>'+pctS(share)+'</span><b>'+full(d.v)+'</b></div>',
+        (ev.touches?ev.touches[0].clientX:ev.clientX), r.top+8);
+      clearTimeout(tipLock); tipLock=setTimeout(hideTip,2600);
+      ev.stopPropagation();
+    };
+    p.addEventListener('pointerenter',bind); p.addEventListener('pointermove',bind);
+    p.addEventListener('pointerleave',hideTip); p.addEventListener('click',bind);
+    g.appendChild(p);
+    if(w>52 && opts.inLabel!==false){
+      const t=el('text',{x:w/2,y:H/2+3.6,'text-anchor':'middle',class:'dlbl',fill:d.dark?'#fff':'#0b0b0b'});
+      t.textContent=pctS(share,0); t.style.pointerEvents='none'; g.appendChild(t);
+    }
+    svg.appendChild(g); x+=w+GAP;
+  });
+  host.appendChild(svg);
+}
+
+/* 라인 차트 (크로스헤어 + 툴팁) */
+function lineChart(host, labels, series, opts){
+  opts=opts||{}; host.innerHTML='';
+  const W=host.clientWidth||600, H=opts.h||188;
+  const P={t:16,r:opts.padR||14,b:24,l:opts.padL||64};
+  const iw=W-P.l-P.r, ih=H-P.t-P.b;
+  let all=[]; series.forEach(s=>s.values.forEach(v=>{ if(v!==null&&isFinite(v)) all.push(v); }));
+  if(!all.length){ host.innerHTML='<div class="empty">데이터 없음</div>'; return; }
+  let mn=Math.min.apply(null,all), mx=Math.max.apply(null,all);
+  if(opts.zero) mn=Math.min(0,mn);
+  const pad=(mx-mn)*0.14||Math.abs(mx)*0.14||1; mn-=pad; mx+=pad;
+  if(opts.zero) mn=0;
+  const stepY=niceStep(mx-mn,4);
+  mn=Math.floor(mn/stepY)*stepY; mx=Math.ceil(mx/stepY)*stepY;
+  if(opts.zero) mn=Math.max(0,mn);
+  const X=i=>P.l+(labels.length<2?iw/2:iw*i/(labels.length-1));
+  const Y=v=>P.t+ih-ih*(v-mn)/(mx-mn);
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H});
+
+  const tvals=[]; for(let v=mn; v<=mx+stepY*1e-6; v+=stepY) tvals.push(v);
+  for(let i=0;i<tvals.length;i++){
+    const v=tvals[i], y=Y(v);
+    svg.appendChild(el('line',{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:CSS('--grid'),'stroke-width':1}));
+    const t=el('text',{x:P.l-7,y:y+3.4,'text-anchor':'end',class:'axtx'});
+    t.textContent=opts.yFmt?opts.yFmt(v):fmt(v); svg.appendChild(t);
+  }
+  const step=labels.length>8?Math.ceil(labels.length/6):1;
+  labels.forEach((lb,i)=>{
+    if(i%step && i!==labels.length-1) return;
+    const t=el('text',{x:X(i),y:H-6,'text-anchor':'middle',class:'axtx'});
+    t.textContent=lb; svg.appendChild(t);
+  });
+
+  series.forEach(s=>{
+    let d='',open=false;
+    s.values.forEach((v,i)=>{ if(v===null||!isFinite(v)){open=false;return;} d+=(open?' L':' M')+X(i)+','+Y(v); open=true; });
+    if(s.area){
+      const pts=s.values.map((v,i)=>({v,i})).filter(o=>o.v!==null&&isFinite(o.v));
+      if(pts.length>1){
+        let a='M'+X(pts[0].i)+','+(P.t+ih);
+        pts.forEach(o=>a+=' L'+X(o.i)+','+Y(o.v));
+        a+=' L'+X(pts[pts.length-1].i)+','+(P.t+ih)+' Z';
+        svg.appendChild(el('path',{d:a,fill:s.color,opacity:.10}));
+      }
+    }
+    svg.appendChild(el('path',{d:d.trim(),fill:'none',stroke:s.color,'stroke-width':2,
+      'stroke-linecap':'round','stroke-linejoin':'round',opacity:s.dim?.55:1}));
+    const li=s.values.map((v,i)=>({v,i})).filter(o=>o.v!==null&&isFinite(o.v)).pop();
+    if(li && s.endDot!==false){
+      svg.appendChild(el('circle',{cx:X(li.i),cy:Y(li.v),r:5,fill:s.color,stroke:CSS('--surface'),'stroke-width':2}));
+      if(s.endLabel){
+        const nearL = X(li.i) < P.l+70;
+        let pv=null; for(let j=li.i-1;j>=0;j--){ if(s.values[j]!==null&&isFinite(s.values[j])){pv=s.values[j];break;} }
+        const below = pv!==null && pv>li.v;
+        const t=el('text',{x:X(li.i)+(nearL?10:-9),y:Y(li.v)+(below?18:-11),
+                 'text-anchor':nearL?'start':'end',class:'dlbl',fill:CSS('--ink')});
+        t.textContent=fmt(li.v); svg.appendChild(t);
+      }
+    }
+  });
+
+  const cross=el('line',{x1:0,x2:0,y1:P.t,y2:P.t+ih,stroke:CSS('--axis'),'stroke-width':1,opacity:0});
+  svg.appendChild(cross);
+  const hit=el('rect',{x:P.l-8,y:0,width:iw+16,height:H,fill:'transparent'});
+  hit.style.cursor='crosshair';
+  const move=ev=>{
+    const r=svg.getBoundingClientRect();
+    const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+    const sx=W/r.width;
+    let idx=Math.round(((cx*sx)-P.l)/(iw/Math.max(1,labels.length-1)));
+    idx=Math.max(0,Math.min(labels.length-1,idx));
+    cross.setAttribute('x1',X(idx)); cross.setAttribute('x2',X(idx)); cross.setAttribute('opacity','1');
+    let h='<div class="tt">'+esc(labels[idx])+'</div>';
+    series.forEach(s=>{
+      const v=s.values[idx]; if(v===null||!isFinite(v))return;
+      h+='<div class="tr"><span style="display:inline-flex;align-items:center;gap:7px"><i class="swl" style="background:'+s.color+'"></i>'+esc(s.name)+'</span><b>&nbsp;'+(opts.tipFmt?opts.tipFmt(v):full(v))+'</b></div>';
+    });
+    showTip(h, r.left+X(idx)/sx, r.top+P.t);
+    ev.stopPropagation();
+  };
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{cross.setAttribute('opacity','0');hideTip();});
+  svg.appendChild(hit);
+  host.appendChild(svg);
+}
+
+/* 스파크라인 */
+function spark(host, vals, color, labels, vfmt){
+  host.innerHTML=''; const W=host.clientWidth||140, H=30;
+  const v=vals.filter(x=>x!==null&&isFinite(x));
+  if(v.length<2) return;
+  const mn=Math.min.apply(null,v), mx=Math.max.apply(null,v), sp=(mx-mn)||1;
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H,preserveAspectRatio:'none'});
+  const X=i=>2+(W-4)*i/(vals.length-1), Y=x=>H-3-(H-8)*(x-mn)/sp;
+  let d='',o=false;
+  vals.forEach((x,i)=>{ if(x===null||!isFinite(x)){o=false;return;} d+=(o?' L':' M')+X(i)+','+Y(x); o=true; });
+  let a='';
+  const pts=vals.map((x,i)=>({x,i})).filter(p=>p.x!==null&&isFinite(p.x));
+  if(pts.length>1){ a='M'+X(pts[0].i)+','+H; pts.forEach(p=>a+=' L'+X(p.i)+','+Y(p.x)); a+=' L'+X(pts[pts.length-1].i)+','+H+' Z'; }
+  if(a) svg.appendChild(el('path',{d:a,fill:color,opacity:.10}));
+  svg.appendChild(el('path',{d:d.trim(),fill:'none',stroke:color,'stroke-width':2,'stroke-linecap':'round','stroke-linejoin':'round'}));
+  const last=pts[pts.length-1];
+  if(last) svg.appendChild(el('circle',{cx:X(last.i),cy:Y(last.x),r:3.2,fill:color,stroke:CSS('--surface'),'stroke-width':2}));
+  const dot=el('circle',{cx:0,cy:0,r:4,fill:color,stroke:CSS('--surface'),'stroke-width':2,opacity:0});
+  svg.appendChild(dot);
+  const hit=el('rect',{x:0,y:0,width:W,height:H,fill:'transparent'});
+  hit.style.cursor='pointer';
+  const move=ev=>{
+    const r=svg.getBoundingClientRect(), sx=W/r.width;
+    const cx=((ev.touches?ev.touches[0].clientX:ev.clientX)-r.left)*sx;
+    let idx=Math.round((cx-2)/((W-4)/Math.max(1,vals.length-1)));
+    idx=Math.max(0,Math.min(vals.length-1,idx));
+    const val=vals[idx]; if(val===null||!isFinite(val)) return;
+    dot.setAttribute('cx',X(idx)); dot.setAttribute('cy',Y(val)); dot.setAttribute('opacity','1');
+    showTip('<div class="tt">'+esc(labels&&labels[idx]?labels[idx]:(idx+1)+'월')+'</div><b style="font-size:13px">'+
+            (vfmt?vfmt(val):full(val))+'</b>', r.left+X(idx)/sx, r.bottom, true);
+    ev.stopPropagation();
+  };
+  hit.addEventListener('pointermove',move); hit.addEventListener('pointerdown',move);
+  hit.addEventListener('pointerleave',()=>{dot.setAttribute('opacity','0');hideTip();});
+  svg.appendChild(hit);
+  host.appendChild(svg);
+}
+
+/* 세로 스택 컬럼 */
+function colStack(host, cats, series, opts){
+  opts=opts||{}; host.innerHTML='';
+  const W=host.clientWidth||600, H=opts.h||190, P={t:18,r:8,b:26,l:64};
+  const iw=W-P.l-P.r, ih=H-P.t-P.b;
+  const tots=cats.map((c,i)=>series.reduce((s,se)=>s+(se.values[i]||0),0));
+  let mx=Math.max.apply(null,tots)*1.1||1;
+  const stepC=niceStep(mx,3); mx=Math.ceil(mx/stepC)*stepC;
+  const band=iw/cats.length, bw=Math.min(46,band*0.5);
+  const svg=el('svg',{viewBox:'0 0 '+W+' '+H,width:'100%',height:H});
+  for(let v=0; v<=mx+stepC*1e-6; v+=stepC){
+    const y=P.t+ih-ih*v/mx;
+    svg.appendChild(el('line',{x1:P.l,x2:W-P.r,y1:y,y2:y,stroke:CSS('--grid'),'stroke-width':1}));
+    const t=el('text',{x:P.l-7,y:y+3.4,'text-anchor':'end',class:'axtx'}); t.textContent=fmt(v); svg.appendChild(t);
+  }
+  cats.forEach((c,i)=>{
+    const cx=P.l+band*i+band/2;
+    let acc=0;
+    const vis=series.map(se=>({se,v:se.values[i]||0})).filter(o=>o.v>0);
+    vis.forEach((o,k)=>{
+      const h=ih*o.v/mx, y=P.t+ih-h-acc;
+      const R=4, last=k===vis.length-1;
+      const hh=Math.max(2,h-(k>0?2:0));
+      const yy=y+(k>0?0:0);
+      let path;
+      if(last&&hh>R*2) path='M0,'+R+' a'+R+','+R+' 0 0 1 '+R+',-'+R+' h'+(bw-2*R)+' a'+R+','+R+' 0 0 1 '+R+','+R+' v'+(hh-R)+' h'+(-bw)+' Z';
+      else path='M0,0 h'+bw+' v'+hh+' h'+(-bw)+' Z';
+      const g=el('g',{transform:'translate('+(cx-bw/2)+','+yy+')'});
+      const fillc=(o.se.colors&&o.se.colors[i])||o.se.color;
+      const p=el('path',{d:path,fill:fillc}); p.style.cursor='pointer';
+      const bind=ev=>{ const r=svg.getBoundingClientRect();
+        showTip('<div class="tt">'+esc(c)+'</div><div class="tr"><span style="display:inline-flex;align-items:center;gap:7px"><i class="sw" style="background:'+fillc+'"></i>'+esc(o.se.name)+'</span><b>&nbsp;'+full(o.v)+'</b></div>',
+          (ev.touches?ev.touches[0].clientX:ev.clientX), r.top+P.t); clearTimeout(tipLock); tipLock=setTimeout(hideTip,2600); ev.stopPropagation(); };
+      p.addEventListener('pointerenter',bind); p.addEventListener('pointermove',bind);
+      p.addEventListener('pointerleave',hideTip); p.addEventListener('click',bind);
+      g.appendChild(p); svg.appendChild(g);
+      acc+=h;
+    });
+    const t=el('text',{x:cx,y:H-7,'text-anchor':'middle',class:'axtx'}); t.textContent=c; svg.appendChild(t);
+    const tv=el('text',{x:cx,y:P.t+ih-ih*tots[i]/mx-8,'text-anchor':'middle',class:'dlbl',fill:CSS('--ink')});
+    tv.textContent=fmt(tots[i]); svg.appendChild(tv);
+  });
+  host.appendChild(svg);
+}
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════
+   데이터 로드 → 상태 → 렌더
+   ══════════════════════════════════════════════════════════ */
+const DETAIL_MARK = '#=====DETAIL=====';
+const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+const S = { m:1, owner:'all', pension:'in', plTab:'flow', snapTab:'총자산',
+            allG:'all', allK:'d', allDir:-1, open:{} };
+let D = null;
+
+/* ── 자산 분류 색/순서 ── */
+/* 증감의 '좋은 방향' — 소비와 부채는 줄어드는 게 좋다 */
+const GOOD_DOWN = {'변동소비':1,'고정소비':1,'부채':1};
+function dcls(g,d){
+  if(!d) return 'flat';
+  return GOOD_DOWN[g] ? (d>0?'down':'up') : (d>0?'up':'down');
+}
+function dspan(g,d){
+  if(!d) return '<span class="flat">—</span>';
+  return '<span class="'+dcls(g,d)+'">'+(d>0?'▲ ':'▼ ')+fmt(Math.abs(d))+'</span>';
+}
+
+const ACLS = [
+  {k:'부동산',   c:'--s1', dark:true},
+  {k:'투자자산', c:'--s2', dark:true},
+  {k:'연금자산', c:'--s3', dark:true},
+  {k:'현금성',   c:'--s4', dark:false},
+  {k:'청약저축', c:'--s5', dark:false}
+];
+const FLOW = [
+  {k:'변동소비', c:'--s1', dark:true},
+  {k:'고정소비', c:'--s2', dark:true},
+  {k:'대출상환', c:'--s3', dark:true},
+  {k:'저축·투자',c:'--s4', dark:false},
+  {k:'남은 돈',  c:'--s5', dark:false}
+];
+
+/* ══ 로드 ══ */
+let SRC = 'live';
+function embedded(id){
+  const e=document.getElementById(id);
+  return (e && e.textContent.trim()) ? e.textContent : '';
+}
+async function boot(){
+  let text=null;
+  if(CONFIG.mode==='encrypted'){
+    try{ text = await loadEncrypted(); }
+    catch(e){
+      document.getElementById('app').innerHTML =
+        '<div class="wrap"><div class="err">데이터를 불러오지 못했습니다.<br>'+esc(e.message)+'</div></div>';
+      return;
+    }
+  } else {
+    // 1) 본 데이터
+    try{
+      const r = await fetch(CONFIG.csvUrl || './data.csv', {cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status);
+      const t = await r.text();
+      if(t.indexOf('#META')<0) throw new Error('형식이 다릅니다');
+      text = t;
+    }catch(e){
+      text = embedded('fallback-csv');
+      if(!text){
+        document.getElementById('app').innerHTML =
+          '<div class="wrap"><div class="err">데이터를 불러오지 못했습니다.<br>'+esc(e.message)+'</div></div>';
+        return;
+      }
+      SRC='snapshot'; console.warn('실시간 로드 실패 → 내장 스냅샷 사용:', e.message);
+    }
+    // 2) 지출 상세
+    let det='';
+    try{
+      const d = await fetch(CONFIG.detailCsvUrl || './detail.csv', {cache:'no-store'});
+      if(d.ok){ const t=await d.text(); if(t.indexOf('날짜')>=0) det=t; }
+    }catch(_){}
+    if(!det) det = embedded('fallback-detail');
+    if(det) text += '\n' + DETAIL_MARK + '\n' + det;
+  }
+  try{
+    const cut = text.indexOf(DETAIL_MARK);
+    let mainTxt = text, detTxt = '';
+    if(cut>=0){ mainTxt = text.slice(0,cut); detTxt = text.slice(cut+DETAIL_MARK.length); }
+    D = build(splitBlocks(parseCSV(mainTxt)));
+    D.detail = parseDetail(detTxt);
+    S.m = D.meta.기준월번호;
+    render();
+  }catch(e){
+    document.getElementById('app').innerHTML =
+      '<div class="wrap"><div class="err">데이터 해석에 실패했습니다.<br>'+esc(e.message)+'</div></div>';
+    console.error(e);
+  }
+}
+
+/* 암호화 모드 (배포용) */
+async function loadEncrypted(){
+  const gate=document.getElementById('gate'); gate.classList.remove('hidden');
+  const raw = await (await fetch(CONFIG.encPath,{cache:'no-store'})).arrayBuffer();
+  const buf = new Uint8Array(raw);
+  const salt=buf.slice(0,16), iv=buf.slice(16,28), body=buf.slice(28);
+  return new Promise(res=>{
+    const go=async()=>{
+      const pw=document.getElementById('gpw').value;
+      try{
+        const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+        const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:250000,hash:'SHA-256'},
+                    km,{name:'AES-GCM',length:256},false,['decrypt']);
+        const out=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,body);
+        gate.classList.add('hidden');
+        res(new TextDecoder().decode(out));
+      }catch(err){ document.getElementById('gmsg').textContent='비밀번호가 맞지 않습니다.'; }
+    };
+    document.getElementById('gbtn').onclick=go;
+    document.getElementById('gpw').onkeydown=e=>{ if(e.key==='Enter') go(); };
+    setTimeout(()=>document.getElementById('gpw').focus(),80);
+  });
+}
+
+/* ══ 블록 → 모델 ══ */
+function build(B){
+  const meta={};
+  (B['#META']?B['#META'].objs:[]).forEach(o=>meta[o['키']]=o['값']);
+  meta.기준월번호 = Math.max(1,Math.min(12, N(meta.기준월번호)||1));
+  meta.연도 = N(meta.연도)||new Date().getFullYear();
+
+  const assets=(B['#자산']?B['#자산'].objs:[]).map(o=>({
+    항목:o['항목'], 구분:o['구분'], 세부:o['세부분류'], 소유자:o['소유자'],
+    v:[N(o['전년말'])||0].concat(MONTHS.map(m=>N(o[m])||0))
+  }));
+  const pl=(B['#손익']?B['#손익'].objs:[]).map(o=>({
+    항목:o['항목'], 구분:o['구분'], 예산:N(o['월예산'])||0,
+    v:MONTHS.map(m=>N(o[m])||0)
+  }));
+  const reasons={};
+  (B['#사유']?B['#사유'].objs:[]).forEach(o=>{
+    reasons[o['항목']] = MONTHS.map(m=>(o[m]||'').trim());
+  });
+  const MK=['총자산','총부채','순자산','연금자산','순자산(연금제외)','투자자산','현금성자산','수입','지출','저축률','로드맵달성률'];
+  const metrics=(B['#월별지표']?B['#월별지표'].objs:[]).map(o=>{
+    const r={월:o['월']}; MK.forEach(k=>r[k]=N(o[k])); return r;
+  });
+  const roadmap=(B['#로드맵']?B['#로드맵'].objs:[]).map(o=>({
+    연차:o['연차'], 연도:N(o['연도']),
+    목표금융:N(o['목표_기말금융자산']), 목표순자산:N(o['목표_순자산']),
+    실적금융:N(o['실적_금융자산']), 달성률:N(o['달성률']), 비고:o['비고']
+  }));
+  const snaps=(B['#연말스냅샷']?B['#연말스냅샷'].objs:[]).map(o=>({
+    연도:o['연도'], 총자산:N(o['총자산']), 총부채:N(o['총부채']), 순자산:N(o['순자산'])
+  }));
+  const port=(B['#포트폴리오']?B['#포트폴리오'].objs:[]).filter(o=>o['종목명']).map(o=>({
+    구분:o['구분'], 세부:o['세부구분'], 소유자:o['소유자'], 종목:o['종목명'],
+    원금:N(o['매수원금']), 평가:N(o['평가금액']), 손익:N(o['평가손익']),
+    수익률:N(o['수익률']), 목표비중:N(o['목표비중'])
+  }));
+  const goals={};
+  (B['#목표텍스트']?B['#목표텍스트'].objs:[]).forEach(o=>goals[o['구분']]=o['내용']);
+  return {meta,assets,pl,reasons,metrics,roadmap,snaps,port,goals};
+}
+
+/* ══ 지출가계부 원본 → 월별·항목별 내역 ══ */
+function parseDetail(txt){
+  if(!txt || !txt.trim()) return null;
+  const rows = parseCSV(txt);
+  const out = {};            // out[월번호][항목] = [{d,n,v}]
+  const _u = x => new TextDecoder().decode(Uint8Array.from(atob(x), c=>c.charCodeAt(0)));
+  const _K = ['7Jqp7ZmU','66+87JWE','7J6s7J2A'].map(_u), _V = ['6r+A6r+A','66eQ67KM','7Ke464uI'].map(_u);
+  const NAMES = Object.fromEntries(_K.map((k,i)=>[k,_V[i]]));
+  const _RE = new RegExp(_K.join('|'), 'g');
+  const al = s => String(s||'').replace(_RE, k=>NAMES[k]);
+  for(let k=0;k<12;k++){
+    const cD=1+4*k, cI=2+4*k, cN=3+4*k, cV=4+4*k;
+    const bag={};
+    for(const r of rows){
+      if(!r || r.length<=cV) continue;
+      let item=(r[cI]||'').trim(); const date=(r[cD]||'').trim();
+      if(!item || item==='항목' || !date || date==='날짜') continue;
+      const v=N(r[cV]); if(v===null) continue;
+      item = al(item);
+      const md=date.match(/(\d{1,2})\D+(\d{1,2})\s*$/);
+      (bag[item]=bag[item]||[]).push({d: md? (+md[1])+'/'+(+md[2]) : '', n: al(r[cN]||''), v});
+    }
+    if(Object.keys(bag).length) out[k+1]=bag;
+  }
+  return Object.keys(out).length?out:null;
+}
+
+/* ══ 조회 헬퍼 ══ */
+const mi = m => m;                        // metrics 인덱스: 0=전년말, 1..12=월
+const aFil = a => S.owner==='all' ? true : a.소유자===S.owner;
+function assetSum(cls, m, owner){
+  return D.assets.filter(a=>a.구분==='자산' && a.세부===cls && (owner?a.소유자===owner:aFil(a)))
+                 .reduce((s,a)=>s+a.v[m],0);
+}
+const debtSum = m => D.assets.filter(a=>a.구분==='부채').reduce((s,a)=>s+a.v[m],0);
+function assetClasses(m){
+  return ACLS.filter(c=>!(S.pension==='ex' && c.k==='연금자산'))
+             .map(c=>({n:c.k, v:assetSum(c.k,m), c:CSS(c.c), dark:c.dark}));
+}
+const plSum = (g,m) => D.pl.filter(p=>p.구분===g).reduce((s,p)=>s+p.v[m-1],0);
+const plItem = n => D.pl.find(p=>p.항목===n);
+
+function flowSegs(m){
+  const 수입=plSum('수익',m);
+  const 변동=plSum('변동소비',m), 고정=plSum('고정소비',m);
+  const 상환=(plItem('대출상환')?plItem('대출상환').v[m-1]:0);
+  const 저축=D.pl.filter(p=>p.구분==='금융지출'&&p.항목!=='대출상환').reduce((s,p)=>s+p.v[m-1],0);
+  const 남은=수입-변동-고정-상환-저축;
+  const raw={'변동소비':변동,'고정소비':고정,'대출상환':상환,'저축·투자':저축,'남은 돈':남은};
+  return {수입, segs:FLOW.map(f=>({n:f.k, v:raw[f.k], c:CSS(f.c), dark:f.dark})), 남은};
+}
+
+/* ══════════════════════════════════════════════════════════ */
+function render(){
+  const m=S.m, p=m-1;
+  const netKey = S.pension==='in' ? '순자산' : '순자산(연금제외)';
+  const M = D.metrics, cur=M[mi(m)]||{}, prev=M[mi(m-1)]||{};
+  const app=document.getElementById('app');
+
+  app.innerHTML =
+  '<header><div class="wrap">'+
+    '<div class="hd"><div>'+
+      '<h1>'+esc(D.meta.제목||'자산가계부')+'</h1>'+
+      '<div class="stamp">'+esc(D.meta.기준월||(m+'월'))+' 기준 · 갱신 '+esc(D.meta.갱신일시||'')+
+        (SRC==='snapshot'?' · <b style="color:var(--warn)">내장 스냅샷</b>':'')+'</div>'+
+    '</div><button class="iconbtn" id="theme" aria-label="화면 밝기 전환">◐</button></div>'+
+    '<div class="filters">'+
+      '<span class="flabel">기준월</span>'+
+      '<select class="msel" id="msel">'+MONTHS.map((x,i)=>{
+        const on=(M[i+1]&&M[i+1]['총자산']);
+        return on?('<option value="'+(i+1)+'"'+(i+1===m?' selected':'')+'>'+x+'</option>'):'';
+      }).join('')+'</select>'+
+      '<div class="seg" id="own">'+
+        [['all','가구 합계'],['꿀꿀','꿀꿀'],['말벌','말벌']].map(o=>
+        '<button data-v="'+o[0]+'" aria-pressed="'+(S.owner===o[0])+'">'+o[1]+'</button>').join('')+'</div>'+
+      '<div class="seg" id="pen">'+
+        [['in','연금 포함'],['ex','연금 제외']].map(o=>
+        '<button data-v="'+o[0]+'" aria-pressed="'+(S.pension===o[0])+'">'+o[1]+'</button>').join('')+'</div>'+
+    '</div>'+
+  '</div></header>'+
+  '<div class="wrap">'+
+    kpiHTML(cur,prev,netKey,m)+
+    assetSection(m)+
+    plSection(m)+
+    reasonSection(m)+
+    roadSection(m)+
+    portSection()+
+    trendSection()+
+  '</div>';
+
+  /* 이벤트 */
+  document.getElementById('theme').onclick=()=>{
+    const now=document.documentElement.getAttribute('data-theme');
+    const sysDark=matchMedia('(prefers-color-scheme: dark)').matches;
+    const next = now ? (now==='dark'?'light':'dark') : (sysDark?'light':'dark');
+    document.documentElement.setAttribute('data-theme',next);
+    render();
+  };
+  document.getElementById('msel').onchange=e=>{ S.m=+e.target.value; render(); };
+  document.getElementById('own').onclick=e=>{ const b=e.target.closest('button'); if(b){S.owner=b.dataset.v;render();} };
+  document.getElementById('pen').onclick=e=>{ const b=e.target.closest('button'); if(b){S.pension=b.dataset.v;render();} };
+  document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ S.plTab=b.dataset.tab; render(); });
+  document.querySelectorAll('[data-snap]').forEach(b=>b.onclick=()=>{ S.snapTab=b.dataset.snap; render(); });
+  document.querySelectorAll('details[data-k]').forEach(d=>d.addEventListener('toggle',()=>{ S.open[d.dataset.k]=d.open; }));
+  const gsel=document.getElementById('allg');
+  if(gsel) gsel.onchange=e=>{ S.allG=e.target.value; S.open.all=true; render(); };
+  document.querySelectorAll('th[data-sortk]').forEach(t=>t.onclick=()=>{
+    const k=t.dataset.sortk;
+    if(S.allK===k) S.allDir=-S.allDir; else { S.allK=k; S.allDir=(k==='n'||k==='g')?1:-1; }
+    S.open.all=true; render();
+  });
+  document.querySelectorAll('.rw.clickable').forEach(rw=>rw.addEventListener('click',e=>{
+    if(e.target.closest('[data-full]')) return;
+    const d=rw.querySelector('.det'); if(!d) return;
+    d.classList.toggle('hidden'); rw.classList.toggle('open');
+  }));
+  document.querySelectorAll('.tbtn[data-tv]').forEach(b=>b.onclick=()=>{
+    const t=document.getElementById(b.dataset.tv);
+    const on=t.classList.toggle('hidden');
+    b.setAttribute('aria-pressed', String(!on));
+  });
+  requestAnimationFrame(()=>draw(m));
+}
+
+/* ── KPI ── */
+function totAssets(m){ return assetClasses(m).reduce((s,c)=>s+c.v,0); }
+function kpiVal(k,m){
+  if(k==='net')  return totAssets(m) - (S.owner==='all'?debtSum(m):0);
+  if(k==='inv')  return assetSum('투자자산',m);
+  if(k==='pen')  return assetSum('연금자산',m);
+  return null;
+}
+function kpiHTML(cur,prev,netKey,m){
+  const own = S.owner!=='all';
+  const tiles=[
+    {lb: own ? (S.owner+' 자산') : ('순자산'+(S.pension==='ex'?' (연금 제외)':'')), k:'net', hero:true},
+    {lb:'투자자산', k:'inv'},
+    {lb:'연금자산', k:'pen'}
+  ];
+  let h='<section style="margin-top:18px"><div class="kpis">';
+  tiles.forEach((t,i)=>{
+    const v=kpiVal(t.k,m), pv=m>0?kpiVal(t.k,m-1):null;
+    const d=(v!==null&&pv!==null)?v-pv:null, r=(d!==null&&pv)?d/Math.abs(pv):null;
+    h+='<div class="kpi'+(t.hero?' hero':'')+'">'+
+       '<div class="lb">'+esc(t.lb)+'</div>'+
+       '<div class="vl num" data-full="'+full(v)+'" data-lb="'+esc(t.lb)+'">'+fmt(v)+'</div>'+
+       '<div class="dl">'+deltaHTML(d,r)+'</div>'+
+       '<div class="spark" id="sp'+i+'"></div></div>';
+  });
+  const ach=cur['로드맵달성률'], pach=prev?prev['로드맵달성률']:null;
+  const dpp=(ach!==null&&ach!==undefined&&pach!==null&&pach!==undefined)?(ach-pach)*100:null;
+  h+='<div class="kpi"><div class="lb">로드맵 달성률 <span style="opacity:.75">('+D.meta.연도+')</span></div>'+
+     '<div class="vl">'+(ach===null||ach===undefined?'—':pctS(ach))+'</div>'+
+     '<div class="dl">'+(dpp===null?'<span class="flat">—</span>':
+       '<span class="'+(dpp>0?'up':(dpp<0?'down':'flat'))+'">'+(dpp>0?'▲':(dpp<0?'▼':'—'))+' '+Math.abs(dpp).toFixed(1)+'%p</span>')+'</div>'+
+     '<div class="spark" id="sp3"></div></div>';
+  h+='</div>'+
+     '<div class="kpinote">화살표는 '+(m>1?(m-1)+'월':'전년말')+' 대비 · 숫자를 누르면 정확한 금액이 보입니다'+
+     (own?'':'')+' · 로드맵 달성률은 가구 기준</div>';
+  if(own) h+='<div class="card slim" style="margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.6">'+
+    esc(S.owner)+' 명의 자산만 보고 있습니다. 공동 자산(아파트·주택담보대출)과 아래의 <b>이번 달 돈 · 로드맵 · 연도별 추이</b>는 가구 기준입니다.</div>';
+  h+='</section>';
+  return h;
+}
+
+/* ── 자산 ── */
+function assetSection(m){
+  const cls=assetClasses(m);
+  const tot=cls.reduce((s,c)=>s+c.v,0);
+  const debt=S.owner==='all'?debtSum(m):0;
+  const net=tot-debt;
+  const rows=D.assets.filter(a=>a.구분==='자산'&&aFil(a)&&!(S.pension==='ex'&&a.세부==='연금자산'))
+    .concat(S.owner==='all'?D.assets.filter(a=>a.구분==='부채'):[]);
+  const labels=['전년말'].concat(MONTHS.slice(0,m));
+  const netVals=labels.map((_,i)=>{
+    const idx=i;
+    const t=ACLS.filter(c=>!(S.pension==='ex'&&c.k==='연금자산')).reduce((s,c)=>s+assetSum(c.k,idx),0);
+    return t-(S.owner==='all'?debtSum(idx):0);
+  });
+
+  let h='<section><div class="stitle"><h2>우리 집 재산</h2><span class="sub">'+esc(m+'월')+' 기준'+
+        (S.owner!=='all'?' · 공동 자산(아파트·대출) 제외':'')+'</span></div>';
+
+  h+='<div class="card"><div class="chd"><h3>가진 것과 갚을 것</h3>'+
+     '<button class="tbtn" data-tv="tv-bs" aria-pressed="false">표</button></div>'+
+     '<div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">자산 '+fmt(tot)+'</div>'+
+     '<div id="c-asset"></div>'+
+     '<div class="legend">'+cls.filter(c=>c.v>0).map(c=>'<span class="lg"><i class="sw" style="background:'+c.c+'"></i>'+esc(c.n)+' '+fmt(c.v)+'</span>').join('')+'</div>';
+  if(S.owner==='all'){
+    h+='<div style="height:1px;background:var(--grid);margin:16px 0"></div>'+
+       '<div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">이 중 우리 몫</div>'+
+       '<div id="c-net"></div>'+
+       '<div class="legend">'+
+         '<span class="lg"><i class="sw" style="background:var(--s1)"></i>순자산 '+fmt(net)+'</span>'+
+         '<span class="lg"><i class="sw" style="background:var(--s1-soft)"></i>부채 '+fmt(debt)+'</span>'+
+       '</div>';
+  }
+  h+='<table class="tv hidden" id="tv-bs"><thead><tr><th>항목</th><th>소유</th><th>금액</th><th>전월 대비</th></tr></thead><tbody>'+
+     rows.map(a=>{
+       const d=a.v[m]-a.v[m-1];
+       return '<tr><td>'+esc(a.항목)+(a.구분==='부채'?' <span class="pill">부채</span>':'')+'</td><td style="text-align:left;color:var(--muted)">'+esc(a.소유자)+
+              '</td><td><span class="num" data-full="'+full(a.v[m])+'">'+fmt(a.v[m])+'</span></td><td>'+
+              dspan(a.구분,d)+'</td></tr>';
+     }).join('')+'</tbody></table></div>';
+
+  h+='<div class="card"><div class="chd"><h3>'+(S.owner==='all'?'순자산 흐름':esc(S.owner)+' 자산 흐름')+'</h3><span class="note">전년말 → '+esc(m+'월')+'</span></div>'+
+     '<div id="c-nettrend"></div></div>';
+  h+='</section>';
+  window.__net={labels,netVals};
+  return h;
+}
+
+/* ── 손익 / 흐름 ── */
+function plSection(m){
+  const F=flowSegs(m);
+  const 수익=plSum('수익',m), 변동=plSum('변동소비',m), 고정=plSum('고정소비',m);
+  const 순이익=수익-변동-고정;
+
+  let h='<section><div class="stitle"><h2>이번 달 돈</h2><span class="sub">'+esc(m+'월')+'</span></div>'+
+    '<div class="seg" style="margin-bottom:12px">'+
+      '<button data-tab="flow" aria-pressed="'+(S.plTab==='flow')+'">돈의 흐름</button>'+
+      '<button data-tab="pl" aria-pressed="'+(S.plTab==='pl')+'">손익계산서</button>'+
+      '<button data-tab="bud" aria-pressed="'+(S.plTab==='bud')+'">예산 대비</button>'+
+    '</div>';
+
+  if(S.plTab==='flow'){
+    h+='<div class="card"><div class="chd"><h3>수입 '+fmt(F.수입)+'이 어디로 갔나</h3>'+
+       '<button class="tbtn" data-tv="tv-flow" aria-pressed="false">표</button></div>'+
+       '<div id="c-flow"></div><div class="legend">'+
+       F.segs.map(s=>'<span class="lg"><i class="sw" style="background:'+s.c+'"></i>'+esc(s.n)+' '+fmt(s.v)+'</span>').join('')+
+       '</div>';
+    if(F.남은<0) h+='<div style="margin-top:12px;font-size:12px;color:var(--down);font-weight:600">⚠ 수입보다 '+fmt(-F.남은)+' 더 썼습니다</div>';
+    h+='<table class="tv hidden" id="tv-flow"><thead><tr><th>갈래</th><th>금액</th><th>수입 대비</th></tr></thead><tbody>'+
+       F.segs.map(s=>'<tr><td>'+esc(s.n)+'</td><td><span class="num" data-full="'+full(s.v)+'">'+fmt(s.v)+'</span></td><td>'+
+       (F.수입?pctS(s.v/F.수입):'—')+'</td></tr>').join('')+'</tbody></table></div>';
+  }
+  else if(S.plTab==='pl'){
+    const mk=(title,g,color)=>{
+      const items=D.pl.filter(p=>p.구분===g&&p.v[m-1]!==0)
+                      .map(p=>({n:p.항목,v:p.v[m-1]}))
+                      .sort((a,b)=>Math.abs(b.v)-Math.abs(a.v));
+      const mx=Math.max.apply(null,items.map(i=>Math.abs(i.v)).concat([1]));
+      return '<div class="card"><div class="chd"><h3>'+title+'</h3><span class="note">'+
+             fmt(items.reduce((s,i)=>s+i.v,0))+'</span></div><div class="rowlist">'+
+        items.map(i=>{
+          const det=detailFor(i.n,m);
+          return '<div class="rw'+(det?' clickable':'')+'"'+(det?' data-item="'+esc(i.n)+'"':'')+'>'+
+          '<span class="nm">'+(det?'<span class="chev">▶</span>':'')+esc(i.n)+'</span>'+
+          '<span class="vv num" data-full="'+full(i.v)+'">'+fmt(i.v)+'</span>'+
+          '<i class="bar" style="width:'+(Math.abs(i.v)/mx*100).toFixed(1)+'%;background:'+color+
+          (i.v<0?';opacity:.45':'')+'"></i>'+detailHTML(det)+'</div>';
+        }).join('')+'</div></div>';
+    };
+    h+='<div class="card" style="text-align:center;padding:20px 16px"><div class="lb" style="font-size:11.5px;color:var(--muted)">당기순이익 (저축·투자 전)</div>'+
+       '<div style="font-size:30px;font-weight:700;letter-spacing:-.03em;margin-top:4px" class="num" data-full="'+full(순이익)+'">'+fmt(순이익)+'</div>'+
+       '<div style="font-size:12px;color:var(--muted);margin-top:6px">수익 '+fmt(수익)+' − 비용 '+fmt(변동+고정)+'</div></div>';
+    h+=mk('수익','수익',CSS('--s3'));
+    h+=mk('변동소비','변동소비',CSS('--s1'));
+    h+=mk('고정소비','고정소비',CSS('--s2'));
+    if(D.detail) h+='<div class="card slim" style="font-size:11.5px;color:var(--muted)">항목을 누르면 그달의 실제 지출 내역이 펼쳐집니다.</div>';
+  }
+  else {
+    const items=D.pl.filter(p=>(p.구분==='변동소비'||p.구분==='고정소비')&&p.예산>0)
+      .map(p=>({n:p.항목,g:p.구분,b:p.예산,a:p.v[m-1],r:p.v[m-1]/p.예산}))
+      .sort((x,y)=>y.r-x.r);
+    h+='<div class="card"><div class="chd"><h3>예산 대비 실적</h3>'+
+       '<button class="tbtn" data-tv="tv-bud" aria-pressed="false">표</button></div><div class="rowlist">'+
+      items.map(i=>{
+        const over=i.r>1, w=Math.min(100,i.r*100);
+        const col=over?CSS('--down'):(i.r>0.85?CSS('--warn'):CSS('--s1'));
+        const det=detailFor(i.n,m);
+        return '<div class="rw'+(det?' clickable':'')+'"'+(det?' data-item="'+esc(i.n)+'"':'')+'>'+
+          '<span class="nm'+(over?' over':'')+'">'+(det?'<span class="chev">▶</span>':'')+esc(i.n)+
+            (over?'<span class="ovtag">(초과)</span>':'')+'</span>'+
+          '<span class="vv"><span class="num" data-full="'+full(i.a)+'">'+fmt(i.a)+'</span>'+
+          ' <span class="vs" style="font-weight:400">/ '+fmt(i.b)+'</span></span>'+
+          '<i class="track"><i style="width:'+w.toFixed(1)+'%;background:'+col+'"></i></i>'+detailHTML(det)+'</div>';
+      }).join('')+'</div>'+
+      '<table class="tv hidden" id="tv-bud"><thead><tr><th>항목</th><th>예산</th><th>실적</th><th>집행률</th></tr></thead><tbody>'+
+      items.map(i=>'<tr><td>'+esc(i.n)+'</td><td>'+fmt(i.b)+'</td><td>'+fmt(i.a)+'</td><td>'+pctS(i.r,0)+'</td></tr>').join('')+
+      '</tbody></table></div>';
+  }
+  h+='</section>';
+  window.__flow=F;
+  return h;
+}
+
+function detailFor(item,m){
+  if(!D.detail || !D.detail[m]) return null;
+  const l=D.detail[m][item];
+  return (l&&l.length)?l.slice().sort((x,y)=>Math.abs(y.v)-Math.abs(x.v)):null;
+}
+function detailHTML(list){
+  if(!list) return '';
+  const N_=14, show=list.slice(0,N_);
+  return '<div class="det hidden">'+show.map(x=>
+    '<div class="dr"><span class="dd">'+esc(x.d)+'</span><span class="dn">'+esc(x.n||'(내역 없음)')+
+    '</span><span class="dv">'+(Math.abs(x.v)>=1e8?fmt(x.v):Math.round(x.v).toLocaleString()+'원')+'</span></div>').join('')+
+    (list.length>N_?'<div class="more">외 '+(list.length-N_)+'건</div>':'')+'</div>';
+}
+
+/* ── 특이사항 ── */
+function reasonSection(m){
+  const list=[];
+  D.pl.forEach(p=>{
+    const why=(D.reasons[p.항목]||[])[m-1]||'';
+    const cur=p.v[m-1], pv=m>1?p.v[m-2]:0, d=cur-pv;
+    if(why) list.push({n:p.항목,g:p.구분,d,r:pv?d/Math.abs(pv):null,why,cur});
+  });
+  D.assets.forEach(a=>{
+    const key=a.항목+' ('+a.소유자+')';
+    const why=(D.reasons[key]||[])[m-1]||'';
+    const d=a.v[m]-a.v[m-1];
+    if(why) list.push({n:key,g:a.구분,d,r:a.v[m-1]?d/Math.abs(a.v[m-1]):null,why,cur:a.v[m]});
+  });
+  list.sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+
+  const all=D.pl.map(p=>({n:p.항목,g:p.구분,cur:p.v[m-1],d:p.v[m-1]-(m>1?p.v[m-2]:0)}))
+    .filter(x=>x.cur!==0||x.d!==0).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d));
+
+  let h='<section><div class="stitle"><h2>이번 달 특이사항</h2><span class="sub">사유를 적어둔 항목만</span></div>';
+  if(!list.length){
+    h+='<div class="card"><div class="empty">'+esc(m+'월')+'에 기록된 특이사항이 없습니다.<br>시트의 사유 칸에 메모를 남기면 여기에 나타납니다.</div></div>';
+  } else {
+    h+='<div class="rcards">'+list.map(x=>
+      '<div class="rc"><div class="t"><span class="nm">'+esc(x.n)+'</span>'+
+      '<span class="dv '+dcls(x.g,x.d)+'">'+(x.d>0?'▲':(x.d<0?'▼':'—'))+' '+fmt(Math.abs(x.d))+'</span></div>'+
+      '<div class="pct">'+esc(x.g)+' · '+fmt(x.cur)+(rateOK(x.r)?' · 전월 대비 '+(x.r>0?'+':'')+(x.r*100).toFixed(0)+'%':'')+'</div>'+
+      '<div class="why">'+esc(x.why)+'</div></div>').join('')+'</div>';
+  }
+  const GKEYS=['수익','변동소비','고정소비','금융지출','자산','부채'];
+  let rows=[];
+  D.pl.forEach(p=>rows.push({n:p.항목,g:p.구분,v:p.v[m-1],d:p.v[m-1]-(m>1?p.v[m-2]:0),
+                             why:(D.reasons[p.항목]||[])[m-1]||''}));
+  D.assets.forEach(x=>{
+    const key=x.항목+' ('+x.소유자+')';
+    rows.push({n:key,g:x.구분,v:x.v[m],d:x.v[m]-x.v[m-1],why:(D.reasons[key]||[])[m-1]||''});
+  });
+  rows=rows.filter(x=>x.v!==0||x.d!==0);
+  if(S.allG!=='all') rows=rows.filter(x=>x.g===S.allG);
+  const K=S.allK, DIR=S.allDir;
+  rows.sort((x,y)=>{
+    if(K==='n') return DIR*x.n.localeCompare(y.n,'ko');
+    if(K==='g') return DIR*(GKEYS.indexOf(x.g)-GKEYS.indexOf(y.g));
+    if(K==='v') return DIR*(Math.abs(y.v)-Math.abs(x.v))*-1*-1;
+    return DIR*(Math.abs(y.d)-Math.abs(x.d))*-1*-1;
+  });
+  if(K==='v') rows.sort((x,y)=>DIR*(x.v-y.v));
+  if(K==='d') rows.sort((x,y)=>DIR*(Math.abs(x.d)-Math.abs(y.d)));
+  const arw=k=>K===k?(DIR<0?' ▾':' ▴'):'';
+  const th=(k,label,align)=>'<th class="sortable'+(K===k?' on':'')+'" data-sortk="'+k+'"'+
+      (align?' style="text-align:left"':'')+'>'+label+arw(k)+'</th>';
+  h+='<div class="card" style="margin-top:12px"><details data-k="all"'+(S.open.all?' open':'')+'>'+
+     '<summary>전체 항목 보기 · 정렬과 필터</summary>'+
+     '<div class="ctrls"><select class="mini" id="allg">'+
+       ['<option value="all"'+(S.allG==='all'?' selected':'')+'>전체 구분</option>']
+       .concat(GKEYS.map(g=>'<option value="'+g+'"'+(S.allG===g?' selected':'')+'>'+g+'</option>')).join('')+
+     '</select><span style="font-size:11.5px;color:var(--muted)">'+rows.length+'개 항목 · 표 제목을 눌러 정렬</span></div>'+
+     '<div style="font-size:11px;color:var(--muted);margin:4px 0 2px;line-height:1.6">초록 = 좋은 방향 (수입·자산·저축 증가, 소비·부채 감소)</div>'+
+     '<div class="tw"><table class="tv"><thead><tr>'+th('n','항목',true)+th('g','구분',true)+th('v',esc(m+'월'))+th('d','전월 대비')+
+     '<th style="text-align:left">사유</th></tr></thead><tbody>'+
+     rows.map(x=>'<tr><td>'+esc(x.n)+'</td><td style="text-align:left;color:var(--muted)">'+esc(x.g)+'</td>'+
+       '<td><span class="num" data-full="'+full(x.v)+'">'+fmt(x.v)+'</span></td><td>'+
+       dspan(x.g,x.d)+
+       '</td><td class="why" style="text-align:left">'+esc(x.why)+'</td></tr>').join('')+
+     '</tbody></table></div></details></div></section>';
+  return h;
+}
+
+/* ── 로드맵 ── */
+function roadSection(m){
+  const R=D.roadmap;
+  const cy=R.find(r=>r.연도===D.meta.연도)||R[0];
+  const cur=(D.metrics[mi(m)]||{})['투자자산'];
+  const rate=cy&&cy.목표금융?cur/cy.목표금융:null;
+  const left=cy?cy.목표금융-cur:null;
+
+  let h='<section><div class="stitle"><h2>10년 로드맵</h2><span class="sub">'+esc(R.length?R[0].연도+'~'+R[R.length-1].연도:'')+' · 금융자산 기준</span></div>';
+  h+='<div class="card"><div class="chd"><h3>'+D.meta.연도+'년 목표까지</h3><span class="note">'+
+     (left>0?fmt(left)+' 남음':'목표 달성')+'</span></div>'+
+     '<div class="rw"><span class="nm">현재 '+fmt(cur)+'</span><span class="vv">목표 '+fmt(cy?cy.목표금융:null)+'</span>'+
+     '<i class="track" style="height:14px"><i style="width:'+Math.min(100,(rate||0)*100).toFixed(1)+
+     '%;background:'+(rate>=1?CSS('--up'):CSS('--s1'))+'"></i></i></div>'+
+     '<div style="margin-top:9px;font-size:12px;color:var(--muted)">달성률 <b style="color:var(--ink)">'+pctS(rate)+'</b></div>'+
+     '<details data-k="road"'+(S.open.road?' open':'')+'><summary>10개년 목표 금액 전체 보기</summary>'+
+     '<div class="tw"><table class="tv"><thead><tr><th style="text-align:left">연차</th><th>목표 금융자산</th><th>목표 순자산</th><th>실적</th><th>달성률</th></tr></thead><tbody>'+
+     R.map(r=>{
+       const now = r.연도===D.meta.연도;
+       return '<tr'+(now?' style="background:var(--surface-2)"':'')+'><td>'+esc(r.연차)+(now?' <span class="pill">올해</span>':'')+'</td>'+
+       '<td><span class="num" data-full="'+full(r.목표금융)+'">'+fmt(r.목표금융)+'</span></td>'+
+       '<td><span class="num" data-full="'+full(r.목표순자산)+'">'+fmt(r.목표순자산)+'</span></td>'+
+       '<td>'+(r.실적금융?fmt(r.실적금융):'—')+'</td>'+
+       '<td>'+(r.실적금융?pctS(r.실적금융/r.목표금융,0):'—')+'</td></tr>';
+     }).join('')+'</tbody></table></div>'+
+     '<div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.6">목표 순자산 = 목표 금융자산 + 당해 주택 지분 가정액</div>'+
+     '</details></div>';
+
+  h+='<div class="card"><div class="chd"><h3>연도별 궤적</h3></div>'+
+     '<div id="c-road"></div>'+
+     '<div class="legend">'+
+       '<span class="lg"><i class="swl" style="background:var(--muted)"></i>목표 (연말 기준)</span>'+
+       '<span class="lg"><i class="swl" style="background:var(--s1)"></i>실적 (올해는 '+esc(m+'월')+' 현재)</span></div>'+
+     '</div>';
+  if(D.goals['최종목표']) h+='<div class="card slim"><details><summary>우리 집 최종 목표</summary>'+
+     '<div class="goaltxt" style="margin-top:10px">'+esc(D.goals['최종목표'])+'</div></details></div>';
+  if(D.goals['포트폴리오원칙']) h+='<div class="card slim"><details><summary>포트폴리오 운용 원칙</summary>'+
+     '<div class="goaltxt" style="margin-top:10px">'+esc(D.goals['포트폴리오원칙'])+'</div></details></div>';
+  h+='</section>';
+  window.__road=R;
+  return h;
+}
+
+/* ── 포트폴리오 ── */
+function portSection(){
+  const P=D.port.filter(p=>p.평가&&p.평가>0);
+  let h='<section><div class="stitle"><h2>포트폴리오</h2><span class="sub">목표 배분 대비 현재</span></div>';
+  if(!P.length){
+    h+='<div class="card"><div class="empty">포트폴리오상세 탭에 <b>수량과 평단가</b>를 입력하면<br>목표 비중 대비 현재 배분과 종목별 손익이 여기에 표시됩니다.</div></div></section>';
+    return h;
+  }
+  const tot=P.reduce((s,p)=>s+p.평가,0);
+  const groups={};
+  P.forEach(p=>{ groups[p.구분]=groups[p.구분]||{v:0,t:p.목표비중||0}; groups[p.구분].v+=p.평가; });
+  const gk=Object.keys(groups);
+  h+='<div class="card"><div class="chd"><h3>목표 대비 실제 비중</h3><span class="note">평가액 '+fmt(tot)+'</span></div><div class="rowlist">'+
+    gk.map((k,i)=>{
+      const act=groups[k].v/tot, tg=groups[k].t;
+      const off=act-tg;
+      return '<div class="rw"><span class="nm">'+esc(k)+'</span>'+
+        '<span class="vv">'+pctS(act,0)+' <span class="vs" style="font-weight:400">/ 목표 '+pctS(tg,0)+'</span></span>'+
+        '<i class="track"><i style="width:'+(act*100).toFixed(1)+'%;background:'+CSS(ACLS[i%5].c)+'"></i></i>'+
+        '<span class="nm" style="grid-column:1/-1;font-size:11px;color:'+(Math.abs(off)>0.05?'var(--warn)':'var(--muted)')+'">'+
+        (off>0?'+':'')+(off*100).toFixed(1)+'%p</span></div>';
+    }).join('')+'</div>'+
+    '<table class="tv"><thead><tr><th>종목</th><th>평가액</th><th>손익</th><th>수익률</th></tr></thead><tbody>'+
+    P.sort((a,b)=>b.평가-a.평가).map(p=>'<tr><td>'+esc(p.종목)+'</td><td><span class="num" data-full="'+full(p.평가)+'">'+fmt(p.평가)+'</span></td>'+
+    '<td class="'+(p.손익>0?'up':(p.손익<0?'down':'flat'))+'">'+(p.손익>0?'+':'')+fmt(p.손익)+'</td><td>'+pctS(p.수익률)+'</td></tr>').join('')+
+    '</tbody></table></div></section>';
+  return h;
+}
+
+/* ── 3개년 추이 ── */
+function trendSection(){
+  if(!D.snaps.length) return '';
+  const TABS=['총자산','순자산','총부채'];
+  const lbl={'총자산':'총자산','순자산':'순자산','총부채':'부채'};
+  return '<section><div class="stitle"><h2>연도별 추이</h2><span class="sub">연말 기준</span></div>'+
+    '<div class="seg" style="margin-bottom:12px">'+TABS.map(t=>
+      '<button data-snap="'+t+'" aria-pressed="'+(S.snapTab===t)+'">'+lbl[t]+'</button>').join('')+'</div>'+
+    '<div class="card"><div class="chd"><h3>'+lbl[S.snapTab]+' 변화</h3>'+
+    '<button class="tbtn" data-tv="tv-snap" aria-pressed="false">표</button></div><div id="c-snap"></div>'+
+    '<table class="tv hidden" id="tv-snap"><thead><tr><th>연도</th><th>총자산</th><th>부채</th><th>순자산</th></tr></thead><tbody>'+
+    D.snaps.map(s=>'<tr><td>'+esc(s.연도)+'</td><td>'+fmt(s.총자산)+'</td><td>'+fmt(s.총부채)+'</td><td>'+fmt(s.순자산)+'</td></tr>').join('')+
+    '</tbody></table></div></section>';
+}
+
+/* ── 그리기 ── */
+function draw(m){
+  const M=D.metrics;
+  const netKey=S.pension==='in'?'순자산':'순자산(연금제외)';
+  const kv=k=>{ const a=[]; for(let i=1;i<=m;i++) a.push(kpiVal(k,i)); return a; };
+  const mv=k=>{ const a=[]; for(let i=1;i<=m;i++) a.push(M[i]?M[i][k]:null); return a; };
+  const slabs=[]; for(let i=1;i<=m;i++) slabs.push(i+'월');
+  [[0,kv('net'),'--s1',null],[1,kv('inv'),'--s2',null],[2,kv('pen'),'--s3',null],
+   [3,mv('로드맵달성률'),'--s1',v=>pctS(v)]].forEach(([i,vals,c,f])=>{
+    const h=document.getElementById('sp'+i); if(h) spark(h, vals, CSS(c), slabs, f);
+  });
+
+  const cls=assetClasses(m);
+  const ha=document.getElementById('c-asset'); if(ha) hStack(ha, cls, {h:34});
+  const hn=document.getElementById('c-net');
+  if(hn){
+    const tot=cls.reduce((s,c)=>s+c.v,0), debt=debtSum(m);
+    hStack(hn, [{n:'순자산',v:tot-debt,c:CSS('--s1'),dark:true},{n:'부채',v:debt,c:CSS('--s1-soft'),dark:false}], {h:34});
+  }
+  const ht=document.getElementById('c-nettrend');
+  if(ht&&window.__net) lineChart(ht, window.__net.labels,
+    [{name:'순자산',values:window.__net.netVals,color:CSS('--s1'),area:true,endLabel:true}],
+    {h:190,padR:52});
+
+  const hf=document.getElementById('c-flow');
+  if(hf&&window.__flow) hStack(hf, window.__flow.segs.filter(s=>s.v>0), {h:40});
+
+  const hr=document.getElementById('c-road');
+  if(hr&&window.__road){
+    const R=window.__road;
+    lineChart(hr, R.map(r=>String(r.연도).slice(2)+'년'),
+      [{name:'목표',values:R.map(r=>r.목표금융),color:CSS('--muted'),endDot:false},
+       {name:'실적',values:R.map(r=>r.실적금융&&r.실적금융>0?r.실적금융:null),color:CSS('--s1'),endLabel:true}],
+      {h:200,zero:true,padR:48});
+  }
+  const hs=document.getElementById('c-snap');
+  if(hs){
+    const key=S.snapTab, nm={'총자산':'총자산','순자산':'순자산','총부채':'부채'}[key];
+    const pre={'총자산':'a','순자산':'n','총부채':'d'}[key];
+    const n=D.snaps.length;
+    const cols=D.snaps.map((_,i)=>CSS('--ord-'+pre+(Math.min(3,Math.max(1,Math.round(1+i*2/Math.max(1,n-1)))))));
+    colStack(hs, D.snaps.map(s=>String(s.연도)),
+      [{name:nm, values:D.snaps.map(s=>s[key]), color:cols[cols.length-1], colors:cols}], {h:200});
+  }
+}
+
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>draw(S.m),180); });
+boot();
+
+</script>
+</body>
+</html>

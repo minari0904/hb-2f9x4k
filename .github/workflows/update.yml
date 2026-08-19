@@ -1,0 +1,43 @@
+name: 대시보드 갱신
+on:
+  schedule:
+    - cron: '0 21 * * *'      # 매일 06:00 (한국시간)
+  workflow_dispatch:           # Actions 탭에서 수동 실행 버튼
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: 시트 읽어서 암호화
+        env:
+          SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
+          SHEET_DETAIL_CSV_URL: ${{ secrets.SHEET_DETAIL_CSV_URL }}
+          DASH_PASSWORD: ${{ secrets.DASH_PASSWORD }}
+        run: node scripts/encrypt.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
