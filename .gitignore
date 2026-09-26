@@ -1,0 +1,18 @@
+# 비공개 정보 — 절대 커밋하지 않는다
+LOCAL.md
+*.local.md
+*.local.json
+.env
+
+# 빌드 산출물
+site/
+data.enc
+tools/*.xlsx
+
+# 로컬 확인용
+data.csv
+detail.csv
+*.preview.html
+node_modules/
+__pycache__/
+.DS_Store

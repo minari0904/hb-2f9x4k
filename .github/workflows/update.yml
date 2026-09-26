@@ -26,6 +26,7 @@ jobs:
         env:
           SHEET_CSV_URL: ${{ secrets.SHEET_CSV_URL }}
           SHEET_DETAIL_CSV_URL: ${{ secrets.SHEET_DETAIL_CSV_URL }}
+          NAME_MAP: ${{ secrets.NAME_MAP }}
           DASH_PASSWORD: ${{ secrets.DASH_PASSWORD }}
         run: node scripts/encrypt.mjs
       - uses: actions/upload-pages-artifact@v3

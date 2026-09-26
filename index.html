@@ -119,6 +119,16 @@ section{margin-top:26px}
 .kpi .dl{font-size:11.5px;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpi .lb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kpinote{font-size:11px;color:var(--muted);margin-top:9px;padding:0 3px;line-height:1.6}
+.kpinote b.warn{color:var(--down)}
+.alert{border:1px solid var(--down);border-radius:var(--r);padding:13px 15px;margin-top:16px;
+  background:var(--surface);box-shadow:var(--shadow)}
+.alert h4{margin:0 0 6px;font-size:13px;color:var(--down);font-weight:700;letter-spacing:-.01em}
+.alert p{margin:0;font-size:12px;color:var(--ink-2);line-height:1.65}
+.alert ul{margin:8px 0 0;padding-left:17px;font-size:12px;color:var(--ink-2);line-height:1.85}
+.alert ul b{color:var(--ink)}
+.alert .fixhint{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.7}
+.alert code{font-size:11.5px;background:var(--surface-2);padding:1px 6px;border-radius:5px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .kpi .spark{margin-top:9px;display:block;width:100%;height:30px}
 .up{color:var(--up);font-weight:600}
 .down{color:var(--down);font-weight:600}
@@ -669,6 +679,42 @@ async function loadEncrypted(){
   });
 }
 
+/* ══ 시트 계산 오류 탐지 ══ */
+const ERR_RE = /^#(REF|VALUE|NAME|DIV\/0|N\/A|ERROR|NUM|NULL)/i;
+const ERR_BLOCKS = {'#자산':'자산','#손익':'손익','#월별지표':'월별 지표','#로드맵':'로드맵',
+                    '#연말스냅샷':'연말 스냅샷','#포트폴리오':'포트폴리오','#사유':'사유'};
+function scanErrors(B){
+  const out=[];
+  for(const key in ERR_BLOCKS){
+    const b=B[key]; if(!b||!b.header||!b.objs) continue;
+    const lk=b.header[0];
+    b.objs.forEach(o=>{
+      b.header.forEach(hh=>{
+        const v=(o[hh]||'').trim();
+        if(ERR_RE.test(v)){
+          const own=(o['소유자']||'').trim();
+          out.push({block:ERR_BLOCKS[key], label:(o[lk]||'').trim()+(own?' ('+own+')':''), col:hh, raw:v});
+        }
+      });
+    });
+  }
+  return out;
+}
+function errMonths(){
+  const s={};
+  (D.errors||[]).forEach(e=>{ const mm=/^(\d{1,2})월$/.exec(e.col); if(mm) s[+mm[1]]=1; });
+  return s;
+}
+function errBanner(m){
+  const E=D.errors||[]; if(!E.length) return '';
+  const rows=E.map(e=>'<li><b>'+esc(e.block)+' › '+esc(e.label)+'</b> — '+esc(e.col)+' 칸이 <code>'+esc(e.raw)+'</code></li>').join('');
+  return '<div class="alert"><h4>⚠ 시트에 계산 오류가 있습니다</h4>'+
+    '<p>아래 칸이 오류 상태라 <b>0으로 처리</b>됩니다. 그만큼 합계·증감·달성률이 실제보다 작게 나옵니다.</p>'+
+    '<ul>'+rows+'</ul>'+
+    '<div class="fixhint">구글 시트의 <b>대시보드데이터</b> 탭에서 해당 칸을 눌러 수식을 확인해주세요. '+
+    '이 탭은 원본 탭을 그대로 읽어오기만 하므로, 같은 줄의 옆 칸 수식을 오른쪽으로 끌어 복사하면 대부분 복구됩니다.</div></div>';
+}
+
 /* ══ 블록 → 모델 ══ */
 function build(B){
   const meta={};
@@ -707,7 +753,7 @@ function build(B){
   }));
   const goals={};
   (B['#목표텍스트']?B['#목표텍스트'].objs:[]).forEach(o=>goals[o['구분']]=o['내용']);
-  return {meta,assets,pl,reasons,metrics,roadmap,snaps,port,goals};
+  return {meta,assets,pl,reasons,metrics,roadmap,snaps,port,goals,errors:scanErrors(B)};
 }
 
 /* ══ 지출가계부 원본 → 월별·항목별 내역 ══ */
@@ -791,6 +837,7 @@ function render(){
     '</div>'+
   '</div></header>'+
   '<div class="wrap">'+
+    errBanner(m)+
     kpiHTML(cur,prev,netKey,m)+
     assetSection(m)+
     plSection(m)+
@@ -849,7 +896,9 @@ function kpiHTML(cur,prev,netKey,m){
     {lb:'투자자산', k:'inv'},
     {lb:'연금자산', k:'pen'}
   ];
-  let h='<section style="margin-top:18px"><div class="kpis">';
+  let h='<section style="margin-top:18px">'+
+    (errMonths()[m]?'<div class="kpinote" style="margin:0 0 9px"><b class="warn">※ '+m+'월은 위 오류의 영향을 받아, 아래 숫자가 실제보다 작습니다.</b></div>':'')+
+    '<div class="kpis">';
   tiles.forEach((t,i)=>{
     const v=kpiVal(t.k,m), pv=m>0?kpiVal(t.k,m-1):null;
     const d=(v!==null&&pv!==null)?v-pv:null, r=(d!==null&&pv)?d/Math.abs(pv):null;
