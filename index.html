@@ -159,6 +159,18 @@ select.mini{font:inherit;font-size:12px;padding:6px 26px 6px 10px;min-height:32p
   background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
   background-position:calc(100% - 14px) 14px,calc(100% - 9px) 14px;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
 table.tv tr:last-child td{border-bottom:0}
+table.tv tr.pgrow td{padding:9px 8px;background:var(--surface-2);color:var(--ink);font-size:12.5px;font-weight:700;
+  text-align:left;border-top:2px solid var(--ink-2);border-bottom:1px solid var(--grid)}
+table.tv tr.pgrow td .pgt{float:right;font-weight:600;color:var(--ink-2);font-variant-numeric:tabular-nums}
+details summary .sumhint{display:block;font-size:11px;margin-top:3px;line-height:1.6}
+details.lead{border-top:0;margin-top:0;padding-top:0}
+details.lead > summary{align-items:flex-start}
+details.lead > summary::before{margin-top:2px}
+.pgroups{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.pg{background:var(--surface-2);border-radius:var(--r);padding:12px 13px;min-width:0}
+.pgn{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pgv{font-size:20px;font-weight:700;letter-spacing:-.02em;margin-top:3px}
+.pgd{display:flex;justify-content:space-between;gap:8px;font-size:12px;margin-top:4px;font-variant-numeric:tabular-nums}
 .hidden{display:none !important}
 .empty{color:var(--muted);font-size:12.5px;padding:22px 4px;text-align:center;line-height:1.7}
 .num{cursor:pointer;border-bottom:1px dotted var(--axis)}
@@ -568,7 +580,7 @@ function colStack(host, cats, series, opts){
    ══════════════════════════════════════════════════════════ */
 const DETAIL_MARK = '#=====DETAIL=====';
 const MONTHS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-const S = { m:1, owner:'all', pension:'in', plTab:'flow', snapTab:'총자산',
+const S = { m:1, owner:'all', pension:'in', plTab:'flow', snapTab:'총자산',   // plTab: 'flow' 결산 | 'bud' 예산 대비
             allG:'all', allK:'d', allDir:-1, open:{} };
 let D = null;
 
@@ -761,11 +773,8 @@ function parseDetail(txt){
   if(!txt || !txt.trim()) return null;
   const rows = parseCSV(txt);
   const out = {};            // out[월번호][항목] = [{d,n,v}]
-  const _u = x => new TextDecoder().decode(Uint8Array.from(atob(x), c=>c.charCodeAt(0)));
-  const _K = ['7Jqp7ZmU','66+87JWE','7J6s7J2A'].map(_u), _V = ['6r+A6r+A','66eQ67KM','7Ke464uI'].map(_u);
-  const NAMES = Object.fromEntries(_K.map((k,i)=>[k,_V[i]]));
-  const _RE = new RegExp(_K.join('|'), 'g');
-  const al = s => String(s||'').replace(_RE, k=>NAMES[k]);
+  // 실명→가명 치환은 scripts/encrypt.mjs(NAME_MAP 시크릿)에서 끝내고 온다. 공개 저장소라 여기에 이름을 두지 않는다.
+  const al = s => String(s||'');
   for(let k=0;k<12;k++){
     const cD=1+4*k, cI=2+4*k, cN=3+4*k, cV=4+4*k;
     const bag={};
@@ -979,12 +988,12 @@ function plSection(m){
 
   let h='<section><div class="stitle"><h2>이번 달 돈</h2><span class="sub">'+esc(m+'월')+'</span></div>'+
     '<div class="seg" style="margin-bottom:12px">'+
-      '<button data-tab="flow" aria-pressed="'+(S.plTab==='flow')+'">돈의 흐름</button>'+
-      '<button data-tab="pl" aria-pressed="'+(S.plTab==='pl')+'">손익계산서</button>'+
+      '<button data-tab="flow" aria-pressed="'+(S.plTab!=='bud')+'">이번 달 결산</button>'+
       '<button data-tab="bud" aria-pressed="'+(S.plTab==='bud')+'">예산 대비</button>'+
     '</div>';
 
-  if(S.plTab==='flow'){
+  if(S.plTab!=='bud'){
+    /* 1) 수입이 어디로 갔나 → 2) 당기순이익 → 3~5) 수익·변동소비·고정소비 상세 (특이사항은 바로 다음 섹션) */
     h+='<div class="card"><div class="chd"><h3>수입 '+fmt(F.수입)+'이 어디로 갔나</h3>'+
        '<button class="tbtn" data-tv="tv-flow" aria-pressed="false">표</button></div>'+
        '<div id="c-flow"></div><div class="legend">'+
@@ -994,8 +1003,6 @@ function plSection(m){
     h+='<table class="tv hidden" id="tv-flow"><thead><tr><th>갈래</th><th>금액</th><th>수입 대비</th></tr></thead><tbody>'+
        F.segs.map(s=>'<tr><td>'+esc(s.n)+'</td><td><span class="num" data-full="'+full(s.v)+'">'+fmt(s.v)+'</span></td><td>'+
        (F.수입?pctS(s.v/F.수입):'—')+'</td></tr>').join('')+'</tbody></table></div>';
-  }
-  else if(S.plTab==='pl'){
     const mk=(title,g,color)=>{
       const items=D.pl.filter(p=>p.구분===g&&p.v[m-1]!==0)
                       .map(p=>({n:p.항목,v:p.v[m-1]}))
@@ -1111,8 +1118,9 @@ function reasonSection(m){
   const arw=k=>K===k?(DIR<0?' ▾':' ▴'):'';
   const th=(k,label,align)=>'<th class="sortable'+(K===k?' on':'')+'" data-sortk="'+k+'"'+
       (align?' style="text-align:left"':'')+'>'+label+arw(k)+'</th>';
-  h+='<div class="card" style="margin-top:12px"><details data-k="all"'+(S.open.all?' open':'')+'>'+
-     '<summary>전체 항목 보기 · 정렬과 필터</summary>'+
+  h+='<div class="card" style="margin-top:12px"><details data-k="all" class="lead"'+(S.open.all?' open':'')+'>'+
+     '<summary><span><b style="color:var(--ink-2)">항목별 전월 대비표</b> <span style="opacity:.8">· 펼쳐 보기</span>'+
+       '<span class="sumhint">수익·소비·금융지출·자산·부채 전 항목의 '+esc(m+'월')+' 금액, 전월 대비 증감, 적어둔 사유를 한 표로 봅니다. 구분 필터와 정렬이 됩니다.</span></span></summary>'+
      '<div class="ctrls"><select class="mini" id="allg">'+
        ['<option value="all"'+(S.allG==='all'?' selected':'')+'>전체 구분</option>']
        .concat(GKEYS.map(g=>'<option value="'+g+'"'+(S.allG===g?' selected':'')+'>'+g+'</option>')).join('')+
@@ -1174,30 +1182,54 @@ function roadSection(m){
 /* ── 포트폴리오 ── */
 function portSection(){
   const P=D.port.filter(p=>p.평가&&p.평가>0);
-  let h='<section><div class="stitle"><h2>포트폴리오</h2><span class="sub">목표 배분 대비 현재</span></div>';
+  let h='<section><div class="stitle"><h2>포트폴리오</h2><span class="sub">안전자산 · 위험자산</span></div>';
   if(!P.length){
     h+='<div class="card"><div class="empty">포트폴리오상세 탭에 <b>수량과 평단가</b>를 입력하면<br>목표 비중 대비 현재 배분과 종목별 손익이 여기에 표시됩니다.</div></div></section>';
     return h;
   }
   const tot=P.reduce((s,p)=>s+p.평가,0);
   const groups={};
-  P.forEach(p=>{ groups[p.구분]=groups[p.구분]||{v:0,t:p.목표비중||0}; groups[p.구분].v+=p.평가; });
+  P.forEach(p=>{
+    const g=groups[p.구분]=groups[p.구분]||{v:0,pl:0,cost:0,t:p.목표비중||0,items:[]};
+    g.v+=p.평가; g.pl+=(p.손익||0); g.cost+=(p.원금||(p.평가-(p.손익||0))); g.items.push(p);
+  });
   const gk=Object.keys(groups);
-  h+='<div class="card"><div class="chd"><h3>목표 대비 실제 비중</h3><span class="note">평가액 '+fmt(tot)+'</span></div><div class="rowlist">'+
+  const sgn=v=>(v>0?'up':(v<0?'down':'flat'));
+  const plS=v=>(v>0?'+':'')+fmt(v);
+
+  /* 최초 화면: 자산군별 합계(평가액 · 손익 · 수익률)만 */
+  h+='<div class="card"><div class="chd"><h3>자산군별 합계</h3><span class="note">평가액 '+fmt(tot)+'</span></div>'+
+    '<div class="pgroups">'+gk.map(k=>{
+      const g=groups[k], r=g.cost?g.pl/g.cost:null;
+      return '<div class="pg"><div class="pgn">'+esc(portLabel(k))+'</div>'+
+        '<div class="pgv num" data-full="'+full(g.v)+'">'+fmt(g.v)+'</div>'+
+        '<div class="pgd"><span class="'+sgn(g.pl)+'">'+plS(g.pl)+'</span>'+
+        '<span class="'+sgn(g.pl)+'">'+(r===null?'—':(r>0?'+':'')+pctS(r))+'</span></div></div>';
+    }).join('')+'</div>';
+
+  /* 토글: 목표 대비 비중 + 자산군별 종목 */
+  h+='<details data-k="port"'+(S.open.port?' open':'')+'><summary>종목별 상세 보기</summary>'+
+    '<div class="rowlist" style="margin-top:10px">'+
     gk.map((k,i)=>{
       const act=groups[k].v/tot, tg=groups[k].t;
       const off=act-tg;
-      return '<div class="rw"><span class="nm">'+esc(k)+'</span>'+
+      return '<div class="rw"><span class="nm">'+esc(portLabel(k))+'</span>'+
         '<span class="vv">'+pctS(act,0)+' <span class="vs" style="font-weight:400">/ 목표 '+pctS(tg,0)+'</span></span>'+
         '<i class="track"><i style="width:'+(act*100).toFixed(1)+'%;background:'+CSS(ACLS[i%5].c)+'"></i></i>'+
         '<span class="nm" style="grid-column:1/-1;font-size:11px;color:'+(Math.abs(off)>0.05?'var(--warn)':'var(--muted)')+'">'+
         (off>0?'+':'')+(off*100).toFixed(1)+'%p</span></div>';
     }).join('')+'</div>'+
-    '<table class="tv"><thead><tr><th>종목</th><th>평가액</th><th>손익</th><th>수익률</th></tr></thead><tbody>'+
-    P.sort((a,b)=>b.평가-a.평가).map(p=>'<tr><td>'+esc(p.종목)+'</td><td><span class="num" data-full="'+full(p.평가)+'">'+fmt(p.평가)+'</span></td>'+
-    '<td class="'+(p.손익>0?'up':(p.손익<0?'down':'flat'))+'">'+(p.손익>0?'+':'')+fmt(p.손익)+'</td><td>'+pctS(p.수익률)+'</td></tr>').join('')+
-    '</tbody></table></div></section>';
+    '<div class="tw"><table class="tv"><thead><tr><th style="text-align:left">종목</th><th>평가액</th><th>손익</th><th>수익률</th></tr></thead><tbody>'+
+    gk.map(k=>'<tr class="pgrow"><td colspan="4">'+esc(portLabel(k))+
+      '<span class="pgt">'+fmt(groups[k].v)+' · '+groups[k].items.length+'종목</span></td></tr>'+
+      groups[k].items.sort((a,b)=>b.평가-a.평가).map(p=>'<tr><td>'+esc(p.종목)+'</td><td><span class="num" data-full="'+full(p.평가)+'">'+fmt(p.평가)+'</span></td>'+
+      '<td class="'+sgn(p.손익)+'">'+plS(p.손익)+'</td><td>'+pctS(p.수익률)+'</td></tr>').join('')).join('')+
+    '</tbody></table></div></details></div></section>';
   return h;
+}
+/* 시트의 구분명은 그대로 두고(목표비중 수식이 '핵심'·'위성'으로 판정) 화면 표시만 바꾼다 */
+function portLabel(k){
+  return String(k||'').replace(/^핵심자산/,'안전자산').replace(/^위성자산/,'위험자산');
 }
 
 /* ── 3개년 추이 ── */
